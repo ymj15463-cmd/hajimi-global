@@ -374,11 +374,36 @@ async def vertex_chat_completions(
         n=request.n,
     )
 
-    # 调用vertex/routes/chat_api的实现
-    assert current_api_key is not None
-    return await chat_api.chat_completions(
-        http_request, vertex_request, current_api_key
+    # Vertex 模式使用 Google 服务账号 / Vertex Express 凭证，
+    # 不依赖 AI Studio 的 current_api_key。外层路由已完成 PASSWORD 鉴权。
+    # 旧代码在这里断言 current_api_key 非空，导致 Vertex Chat 请求在进入
+    # chat_api 前直接失败；而异常被普通日志记录，Vertex 仪表盘看不到。
+    vertex_log(
+        "info",
+        f"收到 Vertex Chat 请求，模型: {request.model}",
+        operation="chat_completions",
+        status="started",
     )
+    try:
+        response = await chat_api.chat_completions(
+            http_request, vertex_request, "internal"
+        )
+        vertex_log(
+            "info",
+            f"Vertex Chat 请求处理完成，模型: {request.model}",
+            operation="chat_completions",
+            status="success",
+        )
+        return response
+    except Exception as e:
+        vertex_log(
+            "error",
+            f"Vertex Chat 请求处理失败，模型: {request.model}: {e}",
+            operation="chat_completions",
+            status="error",
+            error_message=str(e),
+        )
+        raise
 
 
 @router.post("/v1/chat/completions", response_model=ChatCompletionResponse)
