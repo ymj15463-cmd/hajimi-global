@@ -31,7 +31,7 @@ if GOOGLE_CREDENTIALS_JSON:
 
 # 项目和位置配置
 PROJECT_ID = os.environ.get("VERTEX_PROJECT_ID", "")
-LOCATION = os.environ.get("VERTEX_LOCATION", "us-central1")
+LOCATION = os.environ.get("VERTEX_LOCATION", "global")
 
 # 模型配置URL
 default_models_config_url = "https://raw.githubusercontent.com/gzzhongqi/vertex2openai/refs/heads/main/vertexModels.json"
