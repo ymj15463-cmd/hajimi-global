@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.schemas import ErrorResponse
 from app.services import GeminiClient
+from app.utils.logging import vertex_log
 from app.utils import (
     APIKeyManager,
     test_api_key,
@@ -32,6 +33,45 @@ BASE_DIR = pathlib.Path(__file__).parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 app = FastAPI(limit="50M")
+
+
+# Vertex Chat 请求入口诊断：在路由匹配/参数校验之前记录请求，
+# 用于区分“客户端没有把请求发到服务端”和“服务端处理失败”。
+@app.middleware("http")
+async def trace_vertex_chat_ingress(request: Request, call_next):
+    path = request.url.path
+    is_chat_request = (
+        request.method.upper() == "POST"
+        and "chat/completions" in path.rstrip("/")
+    )
+    if not is_chat_request:
+        return await call_next(request)
+
+    vertex_log(
+        "info",
+        f"收到 HTTP Chat 请求入口: {request.method} {path}",
+        operation="chat_http_ingress",
+        status="received",
+    )
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        vertex_log(
+            "error",
+            f"Chat 请求在 HTTP 中间件阶段异常: {request.method} {path}: {exc}",
+            operation="chat_http_ingress",
+            status="exception",
+            error_message=str(exc),
+        )
+        raise
+
+    vertex_log(
+        "info",
+        f"Chat HTTP 请求已返回: {request.method} {path}, HTTP {response.status_code}",
+        operation="chat_http_ingress",
+        status=str(response.status_code),
+    )
+    return response
 
 # --------------- CORS 中间件 ---------------
 # 如果 ALLOWED_ORIGINS 为空列表，则不允许任何跨域请求
