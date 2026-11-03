@@ -171,7 +171,7 @@ def update_config(name, value):
         settings.FAKE_STREAMING_CHUNK_SIZE = value
         global FAKE_STREAMING_CHUNK_SIZE
         FAKE_STREAMING_CHUNK_SIZE = value
-        vertex_log("info", f"Updated FAKE_STREAMING_DELAY_PER_CHUNK to {value}")
+        vertex_log("info", f"Updated FAKE_STREAMING_CHUNK_SIZE to {value}")
     else:
         vertex_log("warning", f"Unknown config variable: {name}")
         return
