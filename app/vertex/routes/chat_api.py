@@ -239,7 +239,7 @@ async def chat_completions(
                         vertexai=True,
                         credentials=rotated_credentials,
                         project=rotated_project_id,
-                        location="global",
+                        location=app_config.LOCATION,
                     )
                     vertex_log(
                         "info",
