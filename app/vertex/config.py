@@ -33,8 +33,9 @@ if GOOGLE_CREDENTIALS_JSON:
 PROJECT_ID = os.environ.get("VERTEX_PROJECT_ID", "")
 LOCATION = os.environ.get("VERTEX_LOCATION", "global")
 
-# 模型配置URL
-default_models_config_url = "https://raw.githubusercontent.com/gzzhongqi/vertex2openai/refs/heads/main/vertexModels.json"
+# 模型配置URL：默认使用本仓库维护的Vertex模型清单。
+# 如需覆盖，可继续通过VERTEX_MODELS_CONFIG_URL环境变量指定其他JSON。
+default_models_config_url = "https://raw.githubusercontent.com/ymj15463-cmd/hajimi-global/main/vertexModels.json"
 MODELS_CONFIG_URL = os.environ.get(
     "VERTEX_MODELS_CONFIG_URL", default_models_config_url
 )
@@ -104,9 +105,7 @@ def reload_config():
     VERTEX_EXPRESS_API_KEY_VAL = []
     if hasattr(settings, "VERTEX_EXPRESS_API_KEY") and settings.VERTEX_EXPRESS_API_KEY:
         VERTEX_EXPRESS_API_KEY_VAL = [
-            key.strip()
-            for key in settings.VERTEX_EXPRESS_API_KEY.split(",")
-            if key.strip()
+            key.strip() for key in settings.VERTEX_EXPRESS_API_KEY.split(",") if key.strip()
         ]
         if VERTEX_EXPRESS_API_KEY_VAL:
             vertex_log(
@@ -164,7 +163,6 @@ def update_config(name, value):
         FAKE_STREAMING_ENABLED = value
         vertex_log("info", f"Updated FAKE_STREAMING to {value}")
     elif name == "FAKE_STREAMING_INTERVAL":
-        # 更新FAKE_STREAMING_INTERVAL配置
         settings.FAKE_STREAMING_INTERVAL = value
         global FAKE_STREAMING_INTERVAL_SECONDS
         FAKE_STREAMING_INTERVAL_SECONDS = value
@@ -173,11 +171,6 @@ def update_config(name, value):
         settings.FAKE_STREAMING_CHUNK_SIZE = value
         global FAKE_STREAMING_CHUNK_SIZE
         FAKE_STREAMING_CHUNK_SIZE = value
-        vertex_log("info", f"Updated FAKE_STREAMING_CHUNK_SIZE to {value}")
-    elif name == "FAKE_STREAMING_DELAY_PER_CHUNK":
-        settings.FAKE_STREAMING_DELAY_PER_CHUNK = value
-        global FAKE_STREAMING_DELAY_PER_CHUNK
-        FAKE_STREAMING_DELAY_PER_CHUNK = value
         vertex_log("info", f"Updated FAKE_STREAMING_DELAY_PER_CHUNK to {value}")
     else:
         vertex_log("warning", f"Unknown config variable: {name}")
