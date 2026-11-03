@@ -171,7 +171,7 @@ async def init_vertex_ai(credential_manager=None) -> bool:  # Made async
                         vertexai=True,
                         credentials=temp_creds_val,
                         project=temp_project_id_val,
-                        location="global",
+                        location=app_config.LOCATION,
                     )
                     vertex_log(
                         "info",
@@ -247,7 +247,7 @@ async def get_vertex_ai_client(credential_manager=None):
             f"Creating Vertex AI client with credentials for project: {project_id}",
         )
         client = genai.Client(
-            vertexai=True, credentials=creds, project=project_id, location="global"
+            vertexai=True, credentials=creds, project=project_id, location=app_config.LOCATION
         )
 
         # If we don't have a global fallback client, set this as the fallback
