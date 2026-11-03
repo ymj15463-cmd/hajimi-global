@@ -155,9 +155,10 @@ async def aistudio_list_models(
 async def vertex_list_models(
     request: Request, _=Depends(custom_verify_password), _2=Depends(verify_user_agent)
 ):
-    # 使用vertex/routes/models_api的实现
-    assert current_api_key is not None
-    return await models_api.list_models(request, current_api_key)
+    # Vertex 模型列表使用 Google 服务账号 / Express 凭证管理器，
+    # 不依赖 AI Studio 的 current_api_key。外层路由已经完成 PASSWORD 鉴权，
+    # 因此这里直接调用内部实现，避免把 None 的 current_api_key 当作凭证传入。
+    return await models_api.list_models(request)
 
 
 # API路由
