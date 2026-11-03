@@ -13,6 +13,7 @@ from fastapi import (
 from fastapi.responses import StreamingResponse
 from app.services import GeminiClient
 from app.utils import protect_from_abuse, generate_cache_key, log
+from app.utils.logging import vertex_log
 from app.utils.response import openAI_from_Gemini
 from app.utils.auth import custom_verify_password
 from app.utils.error_handling import sanitize_string
