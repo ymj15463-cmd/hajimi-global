@@ -42,12 +42,14 @@ class DebugTraceMiddleware(BaseHTTPMiddleware):
             return response
         except Exception as exc:
             error = (type(exc).__name__ + ": " + str(exc))[:1200]
+            request.state.debug_error = error
             raise
         finally:
             request_events.add({
                 "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
                 "method": request.method, "path": path, "status_code": status_code,
-                "duration_ms": round((perf_counter() - started) * 1000, 2), "error": error,
+                "duration_ms": round((perf_counter() - started) * 1000, 2),
+                "error": error or getattr(request.state, "debug_error", None),
             })
 
 def require_password(password: Optional[str]):
@@ -82,8 +84,8 @@ async def debug_status(x_debug_password: Optional[str] = Header(None)):
 @debug_router.get("/api/debug/logs")
 async def debug_logs(x_debug_password: Optional[str] = Header(None),
                      limit: int = Query(200, ge=1, le=500),
-                     source: str = Query("all", regex="^(all|aistudio|vertex)$"),
-                     level: str = Query("all", regex="^(all|INFO|WARNING|ERROR|DEBUG)$")):
+                     source: str = Query("all", pattern="^(all|aistudio|vertex)$"),
+                     level: str = Query("all", pattern="^(all|INFO|WARNING|ERROR|DEBUG)$")):
     require_password(x_debug_password)
     rows = []
     if source != "vertex":
