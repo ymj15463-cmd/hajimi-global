@@ -18,6 +18,7 @@ from app.utils import (
 )
 from app.config.persistence import save_settings, load_settings
 from app.api import router, init_router, dashboard_router, init_dashboard_router
+from app.api.debug import debug_router, DebugTraceMiddleware
 from app.vertex.vertex_ai_init import init_vertex_ai
 from app.vertex.credentials_manager import CredentialManager
 import app.config.settings as settings
@@ -33,6 +34,7 @@ BASE_DIR = pathlib.Path(__file__).parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 app = FastAPI(limit="50M")
+app.add_middleware(DebugTraceMiddleware)
 
 
 # Vertex Chat 请求入口诊断：在路由匹配/参数校验之前记录请求，
@@ -314,6 +316,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.include_router(router)
 app.include_router(dashboard_router)
+app.include_router(debug_router)
 
 # 挂载静态文件目录
 app.mount("/assets", StaticFiles(directory="app/templates/assets"), name="assets")
