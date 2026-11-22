@@ -397,6 +397,8 @@ async def vertex_chat_completions(
         )
         return response
     except Exception as e:
+        # 将上游异常附加到当前请求追踪记录；不记录请求正文或凭证。
+        http_request.state.debug_error = f"{type(e).__name__}: {e}"[:1200]
         vertex_log(
             "error",
             f"Vertex Chat 请求处理失败，模型: {request.model}: {e}",
